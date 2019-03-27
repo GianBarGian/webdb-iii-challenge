@@ -20,9 +20,11 @@ const error404 = {
 app.use(helmet());
 app.use(express.json());
 
+//COHORTS ENDPOINTS
+
 app.get('/api/cohorts', async (req, res, next) => {
     try {
-        const cohortsArr = await db('cohorts');
+        const cohortsArr = await db('cohorts').select('id', 'name');
         res.json(cohortsArr);
     } catch {
         next(error500);
@@ -33,9 +35,9 @@ app.get('/api/cohorts/:id', async (req, res, next) => {
     const { id } = req.params;
 
     try {
-        const singleCohortArr = await db('cohorts').where({ id });
-        singleCohortArr.length
-            ? res.json(singleCohortArr[0])
+        const singleCohort = await db('cohorts').select('id', 'name').where({ id }).first();
+        singleCohort
+            ? res.json(singleCohort)
             : next(error404);
     } catch {
         next(error500);
@@ -63,9 +65,9 @@ app.get('/api/cohorts/:id/students', async (req, res, next) => {
 
 app.post('/api/cohorts', async (req, res, next) => {
     try {
-        const idArr = await db('cohorts').insert(req.body);
-        const singleCohortArr = await db('cohorts').where({ id: idArr[0] });
-        res.json(singleCohortArr[0])
+        const id = await db('cohorts').insert(req.body).first();
+        const singleCohort = await db('cohorts').select('id', 'name').where({ id }).first();
+        res.json(singleCohort)
     } catch {
         next(error500);
     }
@@ -76,9 +78,9 @@ app.put('/api/cohorts/:id', async (req, res, next) => {
 
     try {
         const isUpdated = await db('cohorts').where({ id }).update(req.body);
-        const singleCohortArr = await db('cohorts').where({ id });
+        const singleCohort = await db('cohorts').select('id', 'name').where({ id }).first();
         isUpdated
-            ? res.json(singleCohortArr[0])
+            ? res.json(singleCohort)
             : next(error404);
     } catch {
         next(error500);
@@ -98,7 +100,66 @@ app.delete('/api/cohorts/:id', async (req, res, next) => {
     }
 })
 
+// STUDENTS ENDPOINTS
 
+app.get('/api/students', async (req, res, next) => {
+    try {
+        const studentsArr = await db('students').select('id', 'name');
+        res.json(studentsArr);
+    } catch {
+        next(error500);
+    }
+})
+
+app.get('/api/students/:id', async (req, res, next) => {
+    const { id } = req.params;
+
+    try {
+        const singleStudent = await db('students').select('id', 'name').where({ id }).first;
+        singleStudent
+            ? res.json(singleStudent)
+            : next(error404);
+    } catch {
+        next(error500);
+    }
+})
+
+app.post('/api/students', async (req, res, next) => {
+    try{
+        const id = await db('students').insert(req.body).first();
+        const singleStudent = await db('students').select('id', 'name').where({ id }).first();
+        res.json(singleStudent);
+    } catch {
+        next(error500);
+    }
+})
+
+app.put('/api/students/:id', async (req, res, next) => {
+    const { id } = req.params;
+
+    try {
+        const isUpdated = await db('students').where({ id }).update(req.body)
+        const singleStudent = await db('students').select('id', 'name').where({ id }).first();
+        isUpdated
+            ? res.json(singleStudent)
+            : next(error404);
+    } catch {
+        next(error500);
+    }
+})
+
+app.delete('/api/students/:id', async (req, res, next) => {
+    const { id } = req.params;
+
+    try {
+        const isDeleted = await db('students').where({ id }).del();
+        isDeleted
+            ? res.json({ message: "Delete succesful" })
+            : next(error404);
+    } catch {
+        next(error500);
+    }
+})
 
 app.use(errors.defaultError);
 
