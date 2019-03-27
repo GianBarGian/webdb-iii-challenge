@@ -53,9 +53,46 @@ app.get('/api/cohorts/:id/students', async (req, res, next) => {
         studentsArr.length
             ? res.json(studentsArr)
             : next({
-                status: 400,
+                status: 404,
                 message: "Selected Id doesn't exists or there are no students here"
             }); 
+    } catch {
+        next(error500);
+    }
+})
+
+app.post('/api/cohorts', async (req, res, next) => {
+    try {
+        const idArr = await db('cohorts').insert(req.body);
+        const singleCohortArr = await db('cohorts').where({ id: idArr[0] });
+        res.json(singleCohortArr[0])
+    } catch {
+        next(error500);
+    }
+})
+
+app.put('/api/cohorts/:id', async (req, res, next) => {
+    const { id } = req.params;
+
+    try {
+        const isUpdated = await db('cohorts').where({ id }).update(req.body);
+        const singleCohortArr = await db('cohorts').where({ id });
+        isUpdated
+            ? res.json(singleCohortArr[0])
+            : next(error404);
+    } catch {
+        next(error500);
+    }
+})
+
+app.delete('/api/cohorts/:id', async (req, res, next) => {
+    const { id } = req.params;
+
+    try {
+        const isDeleted = await db('cohorts').where({ id }).del()
+        isDeleted
+            ? res.json({ message: "Delete succesful" })
+            : next(error404);
     } catch {
         next(error500);
     }
